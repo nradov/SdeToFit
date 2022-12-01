@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.TimeZone;
 import java.util.zip.ZipException;
 
@@ -51,7 +50,7 @@ public final class SdeToFit {
 			throw new IllegalArgumentException("Usage: input output");
 		}
 
-		final DivesSource divesSource = DiveSourceFactory.create(args[0], null);
+		final DivesSource divesSource = DivesSourceFactory.create(args[0], null);
 		for(final Dive dive: divesSource.getDives()) {
 			createDiveFitFile(dive);
 		}
@@ -59,13 +58,16 @@ public final class SdeToFit {
 		
 	}
 
+	/** File extension for the Garmin Flexible and Interoperabile Data Transfer (FIT) format. */
+	private static final String FIT_FILE_EXTENSION = ".fit";
+	
 	public static void createDiveFitFile(final Dive dive) {
-		final String filename = "ActivityEncodeRecipe.fit";
+		final String filename = "ActivityEncodeRecipe" + FIT_FILE_EXTENSION;
 
 		final List<Mesg> messages = new ArrayList<Mesg>();
 
 		// The starting timestamp for the activity
-		final DateTime startTime = new DateTime(new Date());
+		final DateTime startTime =  new DateTime(Date.from(dive.getStart()));
 
 		// Timer Events are a BEST PRACTICE for FIT ACTIVITY files
 		final EventMesg eventMesg = new EventMesg();
@@ -92,20 +94,15 @@ public final class SdeToFit {
 		final DateTime timestamp = new DateTime(startTime);
 
 		// Create one hour (3600 seconds) of Record data
-		for (int i = 0; i <= 3600; i++) {
+		for (final Record record : dive.getRecords()) {
 			// Create a new Record message and set the timestamp
 			RecordMesg recordMesg = new RecordMesg();
 			recordMesg.setTimestamp(timestamp);
-
-			// Fake Record Data of Various Signal Patterns
-			recordMesg.setDepth(1f);
-			recordMesg.setAltitude((float) (Math.abs((double) i % 255.0) - 127.0)); // Triangle
+			recordMesg.setDepth(record.getDepthMeters());
+			recordMesg.setTemperature(record.getTemperatureDegreesCelsius());
 
 			// Write the Record message to the output stream
 			messages.add(recordMesg);
-
-			// Increment the timestamp by one second
-			timestamp.add(1);
 		}
 
 		// Timer Events are a BEST PRACTICE for FIT ACTIVITY files
@@ -147,32 +144,24 @@ public final class SdeToFit {
 		activityMesg.setTotalTimerTime((float) (timestamp.getTimestamp() - startTime.getTimestamp()));
 		messages.add(activityMesg);
 
-		createActivityFile(messages, filename, startTime);
-	}
-
-	public static void createActivityFile(final List<Mesg> messages, final String filename, final DateTime startTime)
-			throws FitRuntimeException {
 		// The combination of file type, manufacturer id, product id, and serial number
 		// should be unique.
 		// When available, a non-random serial number should be used.
 		final float softwareVersion = 1.0f;
-
-		Random random = new Random();
-		int serialNumber = random.nextInt();
 
 		// Every FIT file MUST contain a File ID message
 		final FileIdMesg fileIdMesg = new FileIdMesg();
 		fileIdMesg.setType(File.ACTIVITY);
 		fileIdMesg.setManufacturer(Manufacturer.SUUNTO);
 		fileIdMesg.setTimeCreated(startTime);
-		fileIdMesg.setSerialNumber((long) serialNumber);
+		fileIdMesg.setSerialNumber(dive.getSerialNumber());
 
 		// A Device Info message is a BEST PRACTICE for FIT ACTIVITY files
 		final DeviceInfoMesg deviceInfoMesg = new DeviceInfoMesg();
 		deviceInfoMesg.setDeviceIndex(DeviceIndex.CREATOR);
-		deviceInfoMesg.setManufacturer(Manufacturer.SUUNTO);
-		deviceInfoMesg.setProductName("D3"); // Max 20 Chars
-		deviceInfoMesg.setSerialNumber((long) serialNumber);
+		deviceInfoMesg.setManufacturer(dive.getManufacturer());
+		deviceInfoMesg.setProductName(dive.getProductName()); // Max 20 Chars
+		deviceInfoMesg.setSerialNumber(dive.getSerialNumber());
 		deviceInfoMesg.setSoftwareVersion(softwareVersion);
 		deviceInfoMesg.setTimestamp(startTime);
 
@@ -188,8 +177,11 @@ public final class SdeToFit {
 
 		// Close the output stream
 		encode.close();
+	}
 
-		System.out.println("Encoded FIT Activity file " + filename);
+	public static void createActivityFile(final List<Mesg> messages, final String filename, final DateTime startTime)
+			throws FitRuntimeException {
+
 	}
 
 }

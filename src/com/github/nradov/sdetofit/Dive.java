@@ -24,9 +24,13 @@ public interface Dive extends Comparable<Dive> {
 	 */
 	Instant getEnd();
 
-	List<Point> getRecords();
+	List<Record> getRecords();
 	
 	String getProductName();
+	
+	Integer getManufacturer();
+	
+	long getSerialNumber();
 	
 	/**
 	 * {@inheritDoc}

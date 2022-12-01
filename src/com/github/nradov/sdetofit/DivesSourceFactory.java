@@ -18,9 +18,9 @@ import com.github.nradov.sdetofit.suunto.SuuntoSde;
  *
  * @author Nick Radov
  */
-public final class DiveSourceFactory {
+public final class DivesSourceFactory {
 
-	private DiveSourceFactory() {
+	private DivesSourceFactory() {
 		// not to be instantiated
 	}
 
@@ -30,56 +30,26 @@ public final class DiveSourceFactory {
 		/** Suunto dive export. */
 		final static String SUUNTO_DIVE_EXPORT = ".sde";
 
-		/** DAN DL7 Level 1 (dive profile). */
-		final static String DAN_DL7_LEVEL_1 = ".zxu";
-
-		/**
-		 * DAN DL7 Level 3 (diver demographics, dive profile & dive log
-		 * details).
-		 */
-		final static String DAN_DL7_LEVEL_3 = ".zxl";
 	}
 
 	/**
 	 * Factory method to automatically create the right source of dive profiles
-	 * based on the file extension. Currently the following file extensions are
-	 * supported.
-	 * <table>
-	 * <caption>Mapping between file extensions and formats</caption> <thead>
-	 * <tr>
-	 * <th>File Extension</th>
-	 * <th>Description</th>
-	 * </tr>
-	 * </thead><tbody>
-	 * <tr>
-	 * <td>.sde</td>
-	 * <td>Suunto Dive Export</td>
-	 * </tr>
-	 * <tr>
-	 * <td>.zxu</td>
-	 * <td>DAN DL7 Level 1</td>
-	 * </tr>
-	 * <tr>
-	 * <td>.zxl</td>
-	 * <td>DAN DL7 Level 3</td>
-	 * </tr>
-	 * </tbody>
-	 * </table>
+	 * based on the file extension. Currently only Suunto Dive Manager (.sde) files
+	 * are supported. supported.
 	 *
-	 * @param file
-	 *            dive profiles
-	 * @param zoneOffset
-	 *            time zone offset for the logged data; this is typically not
-	 *            present in most data files and has to be specified separately
+	 * @param file       dive profiles
+	 * @param zoneOffset time zone offset for the logged data; this is typically not
+	 *                   present in most data files and has to be specified
+	 *                   separately
 	 * @return source of zero or more dive profiles
-	 * @throws ZipException
-	 *             if an error occurs while reading a compressed dive log file
-	 * @throws IOException
-	 *             if an error occurs while reading a dive log file
-	 * @throws ParserConfigurationException
-	 *             if an error occurs while reading an XML dive log file
-	 * @throws SAXException
-	 *             if an error occurs while reading an XML dive log file
+	 * @throws ZipException                 if an error occurs while reading a
+	 *                                      compressed dive log file
+	 * @throws IOException                  if an error occurs while reading a dive
+	 *                                      log file
+	 * @throws ParserConfigurationException if an error occurs while reading an XML
+	 *                                      dive log file
+	 * @throws SAXException                 if an error occurs while reading an XML
+	 *                                      dive log file
 	 */
 	public static DivesSource create(final Path file, final ZoneOffset zoneOffset)
 			throws ZipException, IOException, ParserConfigurationException, SAXException {
