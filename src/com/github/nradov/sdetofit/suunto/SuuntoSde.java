@@ -30,34 +30,31 @@ import com.github.nradov.sdetofit.DivesSource;
  */
 public class SuuntoSde implements DivesSource {
 
-    private static final Logger LOGGER = Logger
-            .getLogger(SuuntoSde.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(SuuntoSde.class.getName());
 
-    private final ZoneOffset zoneOffset;
-    private final ZipFile zipFile;
+	private final ZoneOffset zoneOffset;
+	private final ZipFile zipFile;
 
-    private final NavigableSet<Dive> dives = new TreeSet<>();
+	private final NavigableSet<Dive> dives = new TreeSet<>();
 
-    public SuuntoSde(final String pathname,
-            final ZoneOffset zoneOffset) throws ZipException,
-            IOException, ParserConfigurationException, SAXException {
-        this(Paths.get(pathname), zoneOffset);
-    }
+	public SuuntoSde(final String pathname, final ZoneOffset zoneOffset)
+			throws ZipException, IOException, ParserConfigurationException, SAXException {
+		this(Paths.get(pathname), zoneOffset);
+	}
 
-    public SuuntoSde(final Path file,
-            final ZoneOffset zoneOffset) throws ZipException,
-            IOException, ParserConfigurationException, SAXException {
-        this.zoneOffset = zoneOffset;
-        zipFile = new ZipFile(file.toFile());
-        final Enumeration<? extends ZipEntry> entries = zipFile.entries();
-        while (entries.hasMoreElements()) {
-            final ZipEntry entry = entries.nextElement();
-            LOGGER.log(Level.FINE,
-                    "processing dive profile: \"" + entry.getName() + "\"");
-            dives.add(new SuuntoXml(zipFile.getInputStream(entry),
-                    this.zoneOffset));
-        }
-    }
+	public SuuntoSde(final Path file, final ZoneOffset zoneOffset)
+			throws ZipException, IOException, ParserConfigurationException, SAXException {
+		this.zoneOffset = zoneOffset;
+		zipFile = new ZipFile(file.toFile());
+		final Enumeration<? extends ZipEntry> entries = zipFile.entries();
+		while (entries.hasMoreElements()) {
+			final ZipEntry entry = entries.nextElement();
+			LOGGER.log(Level.FINE, "processing dive profile: \"" + entry.getName() + "\"");
+			System.err.println("processing dive profile: \"" + entry.getName() + "\"");
+			dives.add(new SuuntoXml(zipFile.getInputStream(entry), this.zoneOffset));
+		}
+		
+	}
 
 	@Override
 	public NavigableSet<Dive> getDives() {

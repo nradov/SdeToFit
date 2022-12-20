@@ -1,6 +1,7 @@
 package com.github.nradov.sdetofit;
 
 import com.garmin.fit.DateTime;
+import com.garmin.fit.RecordMesg;
 
 /**
  * A single data point in the dive profile.
@@ -18,7 +19,7 @@ public final class Record {
 	private final byte temperature;
 
 	public Record(final DateTime timeStamp, final float depth, final byte temperature) {
-		this.timeStamp = timeStamp;
+		this.timeStamp = new DateTime(timeStamp);
 		this.depth = depth;
 		this.temperature = temperature;
 	}
@@ -33,5 +34,13 @@ public final class Record {
 
 	public byte getTemperatureDegreesCelsius() {
 		return temperature;
+	}
+
+	public RecordMesg toMesg() {
+		final var recordMesg = new RecordMesg();
+		recordMesg.setTimestamp(timeStamp);
+		recordMesg.setDepth(depth);
+		recordMesg.setTemperature(temperature);
+		return recordMesg;
 	}
 }

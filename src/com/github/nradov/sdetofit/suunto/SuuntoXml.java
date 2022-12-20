@@ -2,13 +2,11 @@ package com.github.nradov.sdetofit.suunto;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -20,9 +18,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.garmin.fit.DateTime;
 import com.garmin.fit.Manufacturer;
 import com.github.nradov.sdetofit.Dive;
 import com.github.nradov.sdetofit.Record;
+import com.github.nradov.sdetofit.SdeToFit;
 
 /**
  * <p>
@@ -42,7 +42,7 @@ import com.github.nradov.sdetofit.Record;
 public class SuuntoXml implements Dive {
 
 	private final ZoneOffset zoneOffset;
-	private final Instant start, end;
+	private final DateTime start, end;
 	private final String productName;
 	private final long serialNumber;
 	private final byte waterTemperatureMaxDepth;
@@ -60,17 +60,17 @@ public class SuuntoXml implements Dive {
 
 		final String date = suunto.getElementsByTagName("DATE").item(0).getTextContent();
 		final int dayOfMonth = Integer.valueOf(date.substring(0, 2));
-		final int month = Integer.valueOf(date.substring(3, 5));
+		final int month = Integer.valueOf(date.substring(3, 5))-1;
 		final int year = Integer.valueOf(date.substring(6));
 		final String time = suunto.getElementsByTagName("TIME").item(0).getTextContent();
 		final int hourOfDay = Integer.valueOf(time.substring(0, 2));
 		final int minute = Integer.valueOf(time.substring(3, 5));
 		final int second = Integer.valueOf(time.substring(6));
 		// TODO: support other time zones
-		start = LocalDateTime.of(year, month, dayOfMonth, hourOfDay, minute, second)
-				.atZone(ZoneId.of("America/Los_Angeles")).toInstant();
+		final Calendar startCalendar = new GregorianCalendar(year, month, dayOfMonth, hourOfDay, minute, second);
+		start = new DateTime((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000);
 		final int diveTimeSec = Integer.valueOf(suunto.getElementsByTagName("DIVETIMESEC").item(0).getTextContent());
-		end = start.plusSeconds(diveTimeSec);
+		end = new DateTime(((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000) + diveTimeSec);
 
 		this.productName = suunto.getElementsByTagName("DEVICEMODEL").item(0).getTextContent();
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("WRISTOPID").item(0).getTextContent());
@@ -80,12 +80,12 @@ public class SuuntoXml implements Dive {
 	}
 
 	@Override
-	public Instant getStart() {
+	public DateTime getStartTime() {
 		return start;
 	}
 
 	@Override
-	public Instant getEnd() {
+	public DateTime getEndTime() {
 		return end;
 	}
 
@@ -96,20 +96,23 @@ public class SuuntoXml implements Dive {
 		final int sampleInterval = Integer
 				.valueOf(suunto.getElementsByTagName("SAMPLEINTERVAL").item(0).getTextContent());
 		final int diveSeconds = sampleCount * sampleInterval;
-
 		final NodeList samples = suunto.getElementsByTagName("SAMPLE");
+		final DateTime dateTime = new DateTime(start);
+		
 		for (int i = 0; i < samples.getLength(); i++) {
 			final Element sample = (Element) samples.item(i);
 			final int sampleTime = Integer.valueOf(sample.getElementsByTagName("SAMPLETIME").item(0).getTextContent());
 			if (sampleTime > diveSeconds) {
 				throw new IllegalStateException("sample at time " + sampleTime + " doesn't match header");
 			}
+
 			final float depth = Float.valueOf(sample.getElementsByTagName("DEPTH").item(0).getTextContent());
 			final byte temperature = Byte.valueOf(sample.getElementsByTagName("TEMPERATURE").item(0).getTextContent());
 			// for most samples the temperature seems to be 0
 			final byte adjustedTemperature = temperature == (byte) 0 ? waterTemperatureMaxDepth : temperature;
-			final Record point = new Record(start.plus(sampleTime, ChronoUnit.SECONDS), depth, adjustedTemperature);
+			final Record point = new Record(dateTime, depth, adjustedTemperature);
 			points.add(point);
+			dateTime.add(sampleInterval);
 		}
 	}
 
@@ -119,7 +122,7 @@ public class SuuntoXml implements Dive {
 
 	@Override
 	public int compareTo(final Dive o) {
-		return getStart().compareTo(o.getStart());
+		return getStartTime().compareTo(o.getStartTime());
 	}
 
 	@Override
@@ -135,6 +138,29 @@ public class SuuntoXml implements Dive {
 	@Override
 	public long getSerialNumber() {
 		return serialNumber;
+	}
+
+	@Override
+	public float getAvgDepth() {
+		double sum = 0;
+		for (final Record record : points) {
+			sum += record.getDepthMeters();
+		}
+		return (float) (sum / (double) points.size());
+	}
+
+	@Override
+	public float getMaxDepth() {
+		float maxDepth = 0f;
+		for (final Record record : points) {
+			maxDepth = Math.max(maxDepth, record.getDepthMeters());
+		}
+		return maxDepth;
+	}
+
+	@Override
+	public float getBottomTime() {
+		return (float) (end.getTimestamp() - start.getTimestamp());
 	}
 
 }

@@ -1,7 +1,8 @@
 package com.github.nradov.sdetofit;
 
-import java.time.Instant;
 import java.util.List;
+
+import com.garmin.fit.DateTime;
 
 /**
  * Represents a single dive profile as a series of depths at points in time.
@@ -15,29 +16,35 @@ public interface Dive extends Comparable<Dive> {
 	 *
 	 * @return time when the dive started
 	 */
-	Instant getStart();
+	DateTime getStartTime();
 
 	/**
 	 * Get the end time for the dive.
 	 *
 	 * @return time when the dive ended
 	 */
-	Instant getEnd();
+	DateTime getEndTime();
 
 	List<Record> getRecords();
-	
+
 	String getProductName();
-	
+
 	Integer getManufacturer();
-	
+
 	long getSerialNumber();
+
+	float getAvgDepth();
+	
+	float getMaxDepth();
+	
+	float getBottomTime();
 	
 	/**
 	 * {@inheritDoc}
 	 *
-	 * @return a negative integer, zero, or a positive integer as the start time
-	 *         of this dive is before, equal to, or after the specified dive.
-	 * @see #getStart()
+	 * @return a negative integer, zero, or a positive integer as the start time of
+	 *         this dive is before, equal to, or after the specified dive.
+	 * @see #getStartTime()
 	 */
 	@Override
 	int compareTo(Dive o);
