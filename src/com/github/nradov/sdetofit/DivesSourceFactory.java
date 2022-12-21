@@ -37,10 +37,7 @@ public final class DivesSourceFactory {
 	 * based on the file extension. Currently only Suunto Dive Manager (.sde) files
 	 * are supported. supported.
 	 *
-	 * @param file       dive profiles
-	 * @param zoneOffset time zone offset for the logged data; this is typically not
-	 *                   present in most data files and has to be specified
-	 *                   separately
+	 * @param file dive profiles
 	 * @return source of zero or more dive profiles
 	 * @throws ZipException                 if an error occurs while reading a
 	 *                                      compressed dive log file
@@ -51,11 +48,11 @@ public final class DivesSourceFactory {
 	 * @throws SAXException                 if an error occurs while reading an XML
 	 *                                      dive log file
 	 */
-	public static DivesSource create(final Path file, final ZoneOffset zoneOffset)
+	public static DivesSource create(final Path file)
 			throws ZipException, IOException, ParserConfigurationException, SAXException {
 		final String lowerCaseFile = file.toString().toLowerCase(Locale.US);
 		if (lowerCaseFile.endsWith(FileExtension.SUUNTO_DIVE_EXPORT)) {
-			return new SuuntoSde(file, zoneOffset);
+			return new SuuntoSde(file);
 		}
 		// TODO: add support for other file formats
 
@@ -64,7 +61,7 @@ public final class DivesSourceFactory {
 
 	public static DivesSource create(final String file, final ZoneOffset zoneOffset)
 			throws ZipException, IOException, ParserConfigurationException, SAXException {
-		return create(Paths.get(file), zoneOffset);
+		return create(Paths.get(file));
 	}
 
 }

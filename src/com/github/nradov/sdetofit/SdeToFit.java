@@ -39,6 +39,9 @@ import com.garmin.fit.SubSport;
  */
 public final class SdeToFit {
 
+	/** This number is taken from {@code Profile.xlsx}. */
+	private static final int MESG_NUM_SESSION = 18;
+
 	private final Path input, output;
 
 	/**
@@ -69,7 +72,7 @@ public final class SdeToFit {
 	}
 
 	public void convert() throws ZipException, IOException, ParserConfigurationException, SAXException {
-		final DivesSource divesSource = DivesSourceFactory.create(input, null);
+		final DivesSource divesSource = DivesSourceFactory.create(input);
 		for (final Dive dive : divesSource.getDives()) {
 			createDiveFitFile(dive);
 		}
@@ -115,7 +118,7 @@ public final class SdeToFit {
 		deviceInfoMesg.setSerialNumber(dive.getSerialNumber());
 		deviceInfoMesg.setTimestamp(dive.getStartTime());
 		messages.add(deviceInfoMesg);
-		
+
 		// Timer Events are a BEST PRACTICE for FIT ACTIVITY files
 		final var eventMesg = new EventMesg();
 		eventMesg.setTimestamp(dive.getStartTime());
@@ -151,14 +154,17 @@ public final class SdeToFit {
 		lapMesg.setTotalTimerTime(elapsedTime);
 		messages.add(lapMesg);
 
-		final var diveSummaryMesg = new DiveSummaryMesg();
-		// diveSummaryMesg.setAvgDepth(dive.getAvgDepth());
-		// .setMaxDepth(dive.getMaxDepth());
-		// diveSummaryMesg.setBottomTime(dive.getBottomTime());
-		// diveSummaryMesg.setReferenceMesg(5);
-		// diveSummaryMesg.setReferenceIndex(0);
-		// messages.add(diveSummaryMesg);
-		
+		final var diveSummaryMesg1 = new DiveSummaryMesg();
+		diveSummaryMesg1.setTimestamp(dive.getStartTime());
+		diveSummaryMesg1.setAvgDepth(dive.getAvgDepth());
+		diveSummaryMesg1.setMaxDepth(dive.getMaxDepth());
+		// diveSummaryMesg1.setSurfaceInterval(1120252l);
+		diveSummaryMesg1.setDiveNumber(dive.getDiveNumber());
+		diveSummaryMesg1.setBottomTime(dive.getBottomTime());
+		diveSummaryMesg1.setReferenceMesg(MESG_NUM_SESSION);
+		diveSummaryMesg1.setReferenceIndex(0);
+		messages.add(diveSummaryMesg1);
+
 		// Every FIT ACTIVITY file MUST contain at least one Session message
 		final var sessionMesg = new SessionMesg();
 		sessionMesg.setMessageIndex(0);

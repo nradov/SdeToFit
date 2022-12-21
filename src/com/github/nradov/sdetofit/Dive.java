@@ -33,6 +33,8 @@ public interface Dive extends Comparable<Dive> {
 
 	long getSerialNumber();
 
+	long getDiveNumber();
+	
 	float getAvgDepth();
 	
 	float getMaxDepth();

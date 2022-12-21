@@ -2,7 +2,6 @@ package com.github.nradov.sdetofit.suunto;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -41,18 +40,17 @@ import com.github.nradov.sdetofit.SdeToFit;
  */
 public class SuuntoXml implements Dive {
 
-	private final ZoneOffset zoneOffset;
 	private final DateTime start, end;
 	private final String productName;
 	private final long serialNumber;
 	private final byte waterTemperatureMaxDepth;
+	private final long diveNumber;
+	private final float maxDepth, meanDepth;
 
 	private final Element suunto;
 
-	public SuuntoXml(final InputStream is, final ZoneOffset zoneOffset)
+	public SuuntoXml(final InputStream is)
 			throws ParserConfigurationException, SAXException, IOException {
-		this.zoneOffset = zoneOffset;
-
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder db = dbf.newDocumentBuilder();
 		final Document doc = db.parse(is);
@@ -60,7 +58,7 @@ public class SuuntoXml implements Dive {
 
 		final String date = suunto.getElementsByTagName("DATE").item(0).getTextContent();
 		final int dayOfMonth = Integer.valueOf(date.substring(0, 2));
-		final int month = Integer.valueOf(date.substring(3, 5))-1;
+		final int month = Integer.valueOf(date.substring(3, 5)) - 1;
 		final int year = Integer.valueOf(date.substring(6));
 		final String time = suunto.getElementsByTagName("TIME").item(0).getTextContent();
 		final int hourOfDay = Integer.valueOf(time.substring(0, 2));
@@ -72,6 +70,14 @@ public class SuuntoXml implements Dive {
 		final int diveTimeSec = Integer.valueOf(suunto.getElementsByTagName("DIVETIMESEC").item(0).getTextContent());
 		end = new DateTime(((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000) + diveTimeSec);
 
+		this.maxDepth = Float.parseFloat(suunto.getElementsByTagName("MAXDEPTH").item(0).getTextContent());
+		this.meanDepth = Float.parseFloat(suunto.getElementsByTagName("MEANDEPTH").item(0).getTextContent());
+		
+		// the LOGTITLE element content is formatted like "367. 2019-11-16 11:11:00"
+		// where the first number is the dive number
+		final var logTitle = suunto.getElementsByTagName("LOGTITLE").item(0).getTextContent();
+		this.diveNumber = Long.parseLong(logTitle.substring(0, logTitle.indexOf('.')));
+		
 		this.productName = suunto.getElementsByTagName("DEVICEMODEL").item(0).getTextContent();
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("WRISTOPID").item(0).getTextContent());
 		this.waterTemperatureMaxDepth = Byte
@@ -98,7 +104,7 @@ public class SuuntoXml implements Dive {
 		final int diveSeconds = sampleCount * sampleInterval;
 		final NodeList samples = suunto.getElementsByTagName("SAMPLE");
 		final DateTime dateTime = new DateTime(start);
-		
+
 		for (int i = 0; i < samples.getLength(); i++) {
 			final Element sample = (Element) samples.item(i);
 			final int sampleTime = Integer.valueOf(sample.getElementsByTagName("SAMPLETIME").item(0).getTextContent());
@@ -142,25 +148,22 @@ public class SuuntoXml implements Dive {
 
 	@Override
 	public float getAvgDepth() {
-		double sum = 0;
-		for (final Record record : points) {
-			sum += record.getDepthMeters();
-		}
-		return (float) (sum / (double) points.size());
+		return meanDepth;
 	}
 
 	@Override
 	public float getMaxDepth() {
-		float maxDepth = 0f;
-		for (final Record record : points) {
-			maxDepth = Math.max(maxDepth, record.getDepthMeters());
-		}
 		return maxDepth;
 	}
 
 	@Override
 	public float getBottomTime() {
 		return (float) (end.getTimestamp() - start.getTimestamp());
+	}
+
+	@Override
+	public long getDiveNumber() {
+		return diveNumber;
 	}
 
 }
