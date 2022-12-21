@@ -86,63 +86,43 @@ public final class SdeToFit {
 
 	private static final String PATTERN = "yyyy-MM-dd-HH-mm-ss";
 
-	// It is a BEST PRACTICE to reuse the same Guid for all FIT files created by
-	// your platform
-	// TODO: make a new GUID
-	private static final byte[] APPLICATION_ID = new byte[] { 0x1, 0x1, 0x2, 0x3, 0x5, 0x8, 0xD, 0x15, 0x22, 0x37, 0x59,
-			(byte) 0x90, (byte) 0xE9, 0x79, 0x62, (byte) 0xDB };
-
 	private void createDiveFitFile(final Dive dive) {
 		final var sdf = new SimpleDateFormat(PATTERN);
-		final String filename = output.toString() + java.io.File.separator + sdf.format(dive.getStartTime().getDate())
+		final var filename = output.toString() + java.io.File.separator + sdf.format(dive.getStartTime().getDate())
 				+ FIT_FILE_EXTENSION;
+		final var encode = new FileEncoder(new java.io.File(filename), Fit.ProtocolVersion.V2_0);
 
-		final var messages = new ArrayList<Mesg>();
+		// final var messages = new ArrayList<Mesg>();
 
-		// The combination of file type, manufacturer id, product id, and serial number
-		// should be unique.
-
-		// Every FIT file MUST contain a File ID message
 		final var fileIdMesg = new FileIdMesg();
 		fileIdMesg.setType(File.ACTIVITY);
 		fileIdMesg.setManufacturer(Manufacturer.SUUNTO);
 		fileIdMesg.setTimeCreated(dive.getStartTime());
 		fileIdMesg.setSerialNumber(dive.getSerialNumber());
-		messages.add(fileIdMesg);
+		encode.write(fileIdMesg);
 
-		// A Device Info message is a BEST PRACTICE for FIT ACTIVITY files
 		final var deviceInfoMesg = new DeviceInfoMesg();
 		deviceInfoMesg.setDeviceIndex(DeviceIndex.CREATOR);
 		deviceInfoMesg.setManufacturer(dive.getManufacturer());
 		deviceInfoMesg.setProductName(dive.getProductName()); // Max 20 Chars
 		deviceInfoMesg.setSerialNumber(dive.getSerialNumber());
 		deviceInfoMesg.setTimestamp(dive.getStartTime());
-		messages.add(deviceInfoMesg);
+		encode.write(deviceInfoMesg);
 
-		// Timer Events are a BEST PRACTICE for FIT ACTIVITY files
 		final var eventMesg = new EventMesg();
 		eventMesg.setTimestamp(dive.getStartTime());
 		eventMesg.setEvent(Event.TIMER);
 		eventMesg.setEventType(EventType.START);
-		messages.add(eventMesg);
+		encode.write(eventMesg);
 
-		// Create the Developer Id message for the developer data fields.
-		final var developerIdMesg = new DeveloperDataIdMesg();
-		for (int i = 0; i < APPLICATION_ID.length; i++) {
-			developerIdMesg.setApplicationId(i, APPLICATION_ID[i]);
-		}
-
-		developerIdMesg.setDeveloperDataIndex((short) 0);
-		messages.add(developerIdMesg);
-
-		dive.getRecords().forEach(e -> messages.add(e.toMesg()));
+		dive.getRecords().forEach(e -> encode.write(e.toMesg()));
 
 		// Timer Events are a BEST PRACTICE for FIT ACTIVITY files
 		final var eventMesgStop = new EventMesg();
 		eventMesgStop.setTimestamp(dive.getEndTime());
 		eventMesgStop.setEvent(Event.TIMER);
 		eventMesgStop.setEventType(EventType.STOP_ALL);
-		messages.add(eventMesgStop);
+		encode.write(eventMesgStop);
 
 		// Every FIT ACTIVITY file MUST contain at least one Lap message
 		final var lapMesg = new LapMesg();
@@ -152,7 +132,7 @@ public final class SdeToFit {
 		final var elapsedTime = (float) (dive.getEndTime().getTimestamp() - dive.getStartTime().getTimestamp());
 		lapMesg.setTotalElapsedTime(elapsedTime);
 		lapMesg.setTotalTimerTime(elapsedTime);
-		messages.add(lapMesg);
+		encode.write(lapMesg);
 
 		final var diveSummaryMesg1 = new DiveSummaryMesg();
 		diveSummaryMesg1.setTimestamp(dive.getStartTime());
@@ -162,7 +142,7 @@ public final class SdeToFit {
 		diveSummaryMesg1.setBottomTime(dive.getBottomTime());
 		diveSummaryMesg1.setReferenceMesg(MESG_NUM_SESSION);
 		diveSummaryMesg1.setReferenceIndex(0);
-		messages.add(diveSummaryMesg1);
+		encode.write(diveSummaryMesg1);
 
 		// Every FIT ACTIVITY file MUST contain at least one Session message
 		final var sessionMesg = new SessionMesg();
@@ -175,18 +155,15 @@ public final class SdeToFit {
 		sessionMesg.setSubSport(SubSport.GAUGE_DIVING);
 		sessionMesg.setFirstLapIndex(0);
 		sessionMesg.setNumLaps(1);
-		messages.add(sessionMesg);
+		encode.write(sessionMesg);
 
 		// Every FIT ACTIVITY file MUST contain EXACTLY one Activity message
 		final var activityMesg = new ActivityMesg();
 		activityMesg.setTimestamp(dive.getStartTime());
 		activityMesg.setNumSessions(1);
 		activityMesg.setTotalTimerTime(elapsedTime);
-		messages.add(activityMesg);
+		encode.write(activityMesg);
 
-		// Create the output stream
-		final var encode = new FileEncoder(new java.io.File(filename), Fit.ProtocolVersion.V2_0);
-		messages.forEach(m -> encode.write(m));
 		encode.close();
 	}
 

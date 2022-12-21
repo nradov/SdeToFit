@@ -50,7 +50,7 @@ public final class DivesSourceFactory {
 	 */
 	public static DivesSource create(final Path file)
 			throws ZipException, IOException, ParserConfigurationException, SAXException {
-		final String lowerCaseFile = file.toString().toLowerCase(Locale.US);
+		final var lowerCaseFile = file.toString().toLowerCase(Locale.US);
 		if (lowerCaseFile.endsWith(FileExtension.SUUNTO_DIVE_EXPORT)) {
 			return new SuuntoSde(file);
 		}

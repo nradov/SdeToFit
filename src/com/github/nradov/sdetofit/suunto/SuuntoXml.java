@@ -82,7 +82,7 @@ public class SuuntoXml implements Dive {
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("WRISTOPID").item(0).getTextContent());
 		this.waterTemperatureMaxDepth = Byte
 				.valueOf(suunto.getElementsByTagName("WATERTEMPMAXDEPTH").item(0).getTextContent());
-		populateDepths();
+		populateRecords();
 	}
 
 	@Override
@@ -95,9 +95,9 @@ public class SuuntoXml implements Dive {
 		return end;
 	}
 
-	private List<Record> points = new ArrayList<Record>();;
+	private List<Record> records = new ArrayList<Record>();;
 
-	private void populateDepths() {
+	private void populateRecords() {
 		final int sampleCount = Integer.valueOf(suunto.getElementsByTagName("SAMPLECNT").item(0).getTextContent());
 		final int sampleInterval = Integer
 				.valueOf(suunto.getElementsByTagName("SAMPLEINTERVAL").item(0).getTextContent());
@@ -106,7 +106,7 @@ public class SuuntoXml implements Dive {
 		final DateTime dateTime = new DateTime(start);
 
 		for (int i = 0; i < samples.getLength(); i++) {
-			final Element sample = (Element) samples.item(i);
+			final var sample = (Element) samples.item(i);
 			final int sampleTime = Integer.valueOf(sample.getElementsByTagName("SAMPLETIME").item(0).getTextContent());
 			if (sampleTime > diveSeconds) {
 				throw new IllegalStateException("sample at time " + sampleTime + " doesn't match header");
@@ -116,14 +116,19 @@ public class SuuntoXml implements Dive {
 			final byte temperature = Byte.valueOf(sample.getElementsByTagName("TEMPERATURE").item(0).getTextContent());
 			// for most samples the temperature seems to be 0
 			final byte adjustedTemperature = temperature == (byte) 0 ? waterTemperatureMaxDepth : temperature;
-			final Record point = new Record(dateTime, depth, adjustedTemperature);
-			points.add(point);
+			final var record = new Record(dateTime, depth, adjustedTemperature);
+			records.add(record);
 			dateTime.add(sampleInterval);
+			
+			final var bookmark = sample.getElementsByTagName("BOOKMARK").item(0).getTextContent();
+			if (!bookmark.isBlank()) {
+				System.err.println("BOOKMARK: " + bookmark);
+			}
 		}
 	}
 
 	public List<Record> getRecords() {
-		return Collections.unmodifiableList(points);
+		return Collections.unmodifiableList(records);
 	}
 
 	@Override

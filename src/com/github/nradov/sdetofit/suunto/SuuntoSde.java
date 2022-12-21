@@ -6,8 +6,6 @@ import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.NavigableSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -29,8 +27,6 @@ import com.github.nradov.sdetofit.DivesSource;
  */
 public class SuuntoSde implements DivesSource {
 
-	private static final Logger LOGGER = Logger.getLogger(SuuntoSde.class.getName());
-
 	private final ZipFile zipFile;
 
 	private final NavigableSet<Dive> dives = new TreeSet<>();
@@ -46,8 +42,7 @@ public class SuuntoSde implements DivesSource {
 		final Enumeration<? extends ZipEntry> entries = zipFile.entries();
 		while (entries.hasMoreElements()) {
 			final ZipEntry entry = entries.nextElement();
-			LOGGER.log(Level.FINE, "processing dive profile: \"" + entry.getName() + "\"");
-			System.err.println("processing dive profile: \"" + entry.getName() + "\"");
+			System.out.println("Converting dive log: \"" + entry.getName() + "\"");
 			dives.add(new SuuntoXml(zipFile.getInputStream(entry)));
 		}
 		
