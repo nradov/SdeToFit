@@ -21,5 +21,7 @@ These instructions are written for Windows and assume that you have a current Ja
 
 # Limitations
 * No support for time zone offsets. All times are treated as being in the local time zone.
-* No support for tissue loading (decompression) or tank pressures (air integration)
+* No support for tissue loading (decompression) or tank pressures (air integration).
+* No support for bookmarks (such as "Slow"). In theory those could probably be converted to FIT `event` messages, but Garmin Connect and Garmin Dive don't display those anyway so it seems pointless.
+* No calculation of surface intervals.
 * Only tested with dive logs recorded using the Suunto D3 and exported from SDM 3.1.0; may not work correctly for other dive computers or SDM versions.
