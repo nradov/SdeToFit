@@ -25,20 +25,28 @@ public interface Dive extends Comparable<Dive> {
 	 */
 	DateTime getEndTime();
 
+	/** Get the dive profile records. */
 	List<Record> getRecords();
 
+	/** Get the dive computer model name. */
 	String getProductName();
 
+	/** Get the dive computer manufacturer number. Values are defined in {@code Profile.xlsx}. */
 	Integer getManufacturer();
 
+	/** Get the dive computer serial number. */
 	long getSerialNumber();
 
+	/** Get the dive log number. */
 	long getDiveNumber();
 	
+	/** Get the average dive depth in meters. */
 	float getAvgDepth();
 	
+	/** Get the maximum dive depth in meters. */
 	float getMaxDepth();
 	
+	/** Get the dive run time in seconds. */
 	float getBottomTime();
 	
 	/**

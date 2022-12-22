@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -12,7 +11,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import com.garmin.fit.ActivityMesg;
-import com.garmin.fit.DeveloperDataIdMesg;
 import com.garmin.fit.DeviceIndex;
 import com.garmin.fit.DeviceInfoMesg;
 import com.garmin.fit.DiveSummaryMesg;
@@ -25,7 +23,6 @@ import com.garmin.fit.FileIdMesg;
 import com.garmin.fit.Fit;
 import com.garmin.fit.LapMesg;
 import com.garmin.fit.Manufacturer;
-import com.garmin.fit.Mesg;
 import com.garmin.fit.SessionMesg;
 import com.garmin.fit.Sport;
 import com.garmin.fit.SubSport;
@@ -84,6 +81,7 @@ public final class SdeToFit {
 	 */
 	private static final String FIT_FILE_EXTENSION = ".fit";
 
+	/** FIT output file name date and time format pattern. */
 	private static final String PATTERN = "yyyy-MM-dd-HH-mm-ss";
 
 	private void createDiveFitFile(final Dive dive) {
@@ -91,8 +89,6 @@ public final class SdeToFit {
 		final var filename = output.toString() + java.io.File.separator + sdf.format(dive.getStartTime().getDate())
 				+ FIT_FILE_EXTENSION;
 		final var encode = new FileEncoder(new java.io.File(filename), Fit.ProtocolVersion.V2_0);
-
-		// final var messages = new ArrayList<Mesg>();
 
 		final var fileIdMesg = new FileIdMesg();
 		fileIdMesg.setType(File.ACTIVITY);

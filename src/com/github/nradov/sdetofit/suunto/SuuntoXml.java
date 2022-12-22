@@ -64,7 +64,6 @@ public class SuuntoXml implements Dive {
 		final int hourOfDay = Integer.valueOf(time.substring(0, 2));
 		final int minute = Integer.valueOf(time.substring(3, 5));
 		final int second = Integer.valueOf(time.substring(6));
-		// TODO: support other time zones
 		final Calendar startCalendar = new GregorianCalendar(year, month, dayOfMonth, hourOfDay, minute, second);
 		start = new DateTime((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000);
 		final int diveTimeSec = Integer.valueOf(suunto.getElementsByTagName("DIVETIMESEC").item(0).getTextContent());
@@ -119,11 +118,6 @@ public class SuuntoXml implements Dive {
 			final var record = new Record(dateTime, depth, adjustedTemperature);
 			records.add(record);
 			dateTime.add(sampleInterval);
-			
-			final var bookmark = sample.getElementsByTagName("BOOKMARK").item(0).getTextContent();
-			if (!bookmark.isBlank()) {
-				System.err.println("BOOKMARK: " + bookmark);
-			}
 		}
 	}
 
