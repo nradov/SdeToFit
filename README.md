@@ -13,7 +13,7 @@ These instructions are written for Windows and assume that you have a current Ja
 8. Click the Save button.
 9. Click the Export button.
 10. Launch Command Prompt.
-11. Run
+11. Run the converter using a command like this, specifying the export file created in the previous steps as the first argument and the output directory as the second argument: `C:\Users\nrado\git\SdeToFit\target>java.exe -cp %CLASSPATH%;SdeToFit-1.0-SNAPSHOT.jar com.github.nradov.sdetofit.SdeToFit C:\Users\nrado\OneDrive\Documents\Divelogs.SDE C:\Users\nrado\OneDrive\Documents`.
 12. Launch a web browser.
 13. Log in to Garmin Connect and navigate to the [Import Data](https://connect.garmin.com/modern/import-data) page.
 14. Drop or select the converted FIT files.
