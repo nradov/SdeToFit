@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import com.github.nradov.sdetofit.suunto.SuuntoSde;
+import com.github.nradov.sdetofit.suunto.SuuntoXml;
 
 /**
  * Utility class for creating {@link DivesSource} objects.
@@ -30,6 +31,9 @@ public final class DivesSourceFactory {
 		/** Suunto dive export. */
 		final static String SUUNTO_DIVE_EXPORT = ".sde";
 
+		/** XML file. */
+		final static String XML = ".xml";
+		
 	}
 
 	/**
@@ -53,6 +57,8 @@ public final class DivesSourceFactory {
 		final var lowerCaseFile = file.toString().toLowerCase(Locale.US);
 		if (lowerCaseFile.endsWith(FileExtension.SUUNTO_DIVE_EXPORT)) {
 			return new SuuntoSde(file);
+		} else if (lowerCaseFile.endsWith(FileExtension.XML)) {
+			return new SuuntoXml(file);
 		}
 		// TODO: add support for other file formats
 
