@@ -37,7 +37,6 @@ public class SuuntoSml implements Dive, DivesSource {
 	private final DateTime start, end;
 	private final String productName;
 	private final long serialNumber;
-	private final byte waterTemperatureMaxDepth;
 	private final long diveNumber;
 	private final float maxDepth, meanDepth;
 
@@ -61,12 +60,6 @@ public class SuuntoSml implements Dive, DivesSource {
 					"Document element name is " + suunto.getLocalName() + " instead of " + DOCUMENT_ELEMENT_NAME);
 		}
 
-
-
-		// final int sampleCnt = Integer.valueOf(suunto.getElementsByTagName("SAMPLECNT").item(0).getTextContent());
-		final int sampleCnt = 1;
-
-
 		final String date = suunto.getElementsByTagName("DateTime").item(0).getTextContent();
 		final LocalDateTime dateTime = LocalDateTime.parse(date);
 
@@ -78,32 +71,20 @@ public class SuuntoSml implements Dive, DivesSource {
 		final int second = dateTime.getSecond();
 
 
-		final int sampleInterval = Integer.valueOf(suunto.getElementsByTagName("SampleInterval").item(0).getTextContent());
 		final Calendar startCalendar = new GregorianCalendar(year, month, dayOfMonth, hourOfDay, minute, second);
 		start = new DateTime((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000);
-		final var diveTimeSecText = suunto.getElementsByTagName("Duration").item(0).getTextContent().trim();
-		final int diveTimeSec;
-		// the DIVETIMESEC element may or may not be populated depending on the SDM
-		// version
-		if (diveTimeSecText.length() > 0) {
-			diveTimeSec = Integer.valueOf(diveTimeSecText);
-		} else {
-			diveTimeSec = sampleCnt * sampleInterval;
-		}
+		final int diveTimeSec = Integer.valueOf(suunto.getElementsByTagName("Duration").item(0).getTextContent().trim());
+
 		end = new DateTime(((startCalendar.getTimeInMillis() - SdeToFit.OFFSET_MS) / 1000) + diveTimeSec);
 
 		this.maxDepth = Float.parseFloat(suunto.getElementsByTagName("Max").item(0).getTextContent());
 		this.meanDepth = Float.parseFloat(suunto.getElementsByTagName("Avg").item(0).getTextContent());
 
-		// the LOGTITLE element content is formatted like "367. 2019-11-16 11:11:00"
-		// where the first number is the dive number
-		// final var logTitle = null; //suunto.getElementsByTagName("LOGTITLE").item(0).getTextContent();
+		// TODO: fix this, as far as I could find the total dive number is not kept in SML
 		this.diveNumber = Integer.valueOf(suunto.getElementsByTagName("NumberInSeries").item(0).getTextContent());
 
 		this.productName = suunto.getElementsByTagName("Name").item(0).getTextContent();
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("SerialNumber").item(0).getTextContent());
-		this.waterTemperatureMaxDepth = 0;
-		// 		Byte.valueOf(suunto.getElementsByTagName("WATERTEMPMAXDEPTH").item(0).getTextContent());
 		populateRecords();
 	}
 
