@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import com.github.nradov.sdetofit.suunto.SuuntoSde;
+import com.github.nradov.sdetofit.suunto.SuuntoSml;
 import com.github.nradov.sdetofit.suunto.SuuntoXml;
 
 /**
@@ -34,6 +35,8 @@ public final class DivesSourceFactory {
 		/** XML file. */
 		final static String XML = ".xml";
 		
+		/** SML file. */
+		final static String SML = ".sml";
 	}
 
 	/**
@@ -59,6 +62,8 @@ public final class DivesSourceFactory {
 			return new SuuntoSde(file);
 		} else if (lowerCaseFile.endsWith(FileExtension.XML)) {
 			return new SuuntoXml(file);
+		} else if (lowerCaseFile.endsWith(FileExtension.SML)) {
+			return new SuuntoSml(file);
 		}
 		// TODO: add support for other file formats
 
