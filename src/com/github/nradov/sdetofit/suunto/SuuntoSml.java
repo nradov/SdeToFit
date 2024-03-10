@@ -71,7 +71,7 @@ public class SuuntoSml implements Dive, DivesSource {
 		final LocalDateTime dateTime = LocalDateTime.parse(date);
 
 		final int dayOfMonth = dateTime.getDayOfMonth();
-		final int month = dateTime.getMonthValue();
+		final int month = dateTime.getMonthValue()-1;
 		final int year = dateTime.getYear();
 		final int hourOfDay = dateTime.getHour();
 		final int minute = dateTime.getMinute();
