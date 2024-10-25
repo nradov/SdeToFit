@@ -173,6 +173,11 @@ public class SuuntoSml implements Dive, DivesSource {
 		return diveNumber;
 	}
 
+    @Override
+    public long getSurfaceTime() {
+        throw new UnsupportedOperationException();
+    }
+
 	@Override
 	public NavigableSet<Dive> getDives() {
 		return new TreeSet<Dive>(Collections.singleton(this));

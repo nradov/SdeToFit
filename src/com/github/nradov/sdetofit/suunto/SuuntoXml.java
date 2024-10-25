@@ -50,6 +50,7 @@ public class SuuntoXml implements Dive, DivesSource {
 	private final long serialNumber;
 	private final byte waterTemperatureMaxDepth;
 	private final long diveNumber;
+    private final long surfaceTime;
 	private final float maxDepth, meanDepth;
 
 	private final Element suunto;
@@ -67,11 +68,6 @@ public class SuuntoXml implements Dive, DivesSource {
 		final Document doc = db.parse(is);
 		suunto = doc.getDocumentElement();
 		
-		if (!DOCUMENT_ELEMENT_NAME.equals(suunto.getLocalName())) {
-			throw new IllegalArgumentException(
-					"Document element name is " + suunto.getLocalName() + " instead of " + DOCUMENT_ELEMENT_NAME);
-		}
-
 		final int sampleCnt = Integer.valueOf(suunto.getElementsByTagName("SAMPLECNT").item(0).getTextContent());
 		final String date = suunto.getElementsByTagName("DATE").item(0).getTextContent();
 		final int dayOfMonth = Integer.valueOf(date.substring(0, 2));
@@ -102,7 +98,7 @@ public class SuuntoXml implements Dive, DivesSource {
 		// where the first number is the dive number
 		final var logTitle = suunto.getElementsByTagName("LOGTITLE").item(0).getTextContent();
 		this.diveNumber = Long.parseLong(logTitle.substring(0, logTitle.indexOf('.')));
-
+		this.surfaceTime = Integer.valueOf(suunto.getElementsByTagName("SURFACETIME").item(0).getTextContent());
 		this.productName = suunto.getElementsByTagName("DEVICEMODEL").item(0).getTextContent();
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("WRISTOPID").item(0).getTextContent());
 		this.waterTemperatureMaxDepth = Byte
@@ -190,6 +186,11 @@ public class SuuntoXml implements Dive, DivesSource {
 	public long getDiveNumber() {
 		return diveNumber;
 	}
+
+    @Override
+    public long getSurfaceTime() {
+        return surfaceTime;
+    }
 
 	@Override
 	public NavigableSet<Dive> getDives() {
