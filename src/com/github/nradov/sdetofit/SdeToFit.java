@@ -131,6 +131,7 @@ public final class SdeToFit {
 		encode.write(lapMesg);
 
 		final var diveSummaryMesg1 = new DiveSummaryMesg();
+        diveSummaryMesg1.setSurfaceInterval(dive.getSurfaceTime());
 		diveSummaryMesg1.setTimestamp(dive.getStartTime());
 		diveSummaryMesg1.setAvgDepth(dive.getAvgDepth());
 		diveSummaryMesg1.setMaxDepth(dive.getMaxDepth());

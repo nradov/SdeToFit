@@ -39,6 +39,9 @@ public interface Dive extends Comparable<Dive> {
 
 	/** Get the dive log number. */
 	long getDiveNumber();
+
+    /** Get the surface interval time */
+    long getSurfaceTime();
 	
 	/** Get the average dive depth in meters. */
 	float getAvgDepth();
