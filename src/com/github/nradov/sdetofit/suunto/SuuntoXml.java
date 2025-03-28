@@ -134,7 +134,7 @@ public class SuuntoXml implements Dive, DivesSource {
 			}
 
 			final float depth = Float.valueOf(sample.getElementsByTagName("DEPTH").item(0).getTextContent());
-			final byte temperature = Byte.valueOf(sample.getElementsByTagName("TEMPERATURE").item(0).getTextContent());
+			final byte temperature = sample.getElementsByTagName("TEMPERATURE").item(0).getTextContent() != "" ? Byte.valueOf(sample.getElementsByTagName("TEMPERATURE").item(0).getTextContent()) : (byte) 0;
 			// for most samples the temperature seems to be 0
 			final byte adjustedTemperature = temperature == (byte) 0 ? waterTemperatureMaxDepth : temperature;
 			final var record = new Record(dateTime, depth, adjustedTemperature);
