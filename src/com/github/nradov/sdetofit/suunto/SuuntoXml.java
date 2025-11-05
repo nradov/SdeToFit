@@ -98,7 +98,8 @@ public class SuuntoXml implements Dive, DivesSource {
 		// where the first number is the dive number
 		final var logTitle = suunto.getElementsByTagName("LOGTITLE").item(0).getTextContent();
 		this.diveNumber = Long.parseLong(logTitle.substring(0, logTitle.indexOf('.')));
-		this.surfaceTime = Integer.valueOf(suunto.getElementsByTagName("SURFACETIME").item(0).getTextContent());
+		String surfaceTime_string = suunto.getElementsByTagName("SURFACETIME").item(0).getTextContent() != "" ? suunto.getElementsByTagName("SURFACETIME").item(0).getTextContent() : "0";
+		this.surfaceTime = Integer.valueOf(surfaceTime_string);
 		this.productName = suunto.getElementsByTagName("DEVICEMODEL").item(0).getTextContent();
 		this.serialNumber = Long.valueOf(suunto.getElementsByTagName("WRISTOPID").item(0).getTextContent());
 		this.waterTemperatureMaxDepth = Byte
@@ -122,7 +123,7 @@ public class SuuntoXml implements Dive, DivesSource {
 		final int sampleCount = Integer.valueOf(suunto.getElementsByTagName("SAMPLECNT").item(0).getTextContent());
 		final int sampleInterval = Integer
 				.valueOf(suunto.getElementsByTagName("SAMPLEINTERVAL").item(0).getTextContent());
-		final int diveSeconds = sampleCount * sampleInterval;
+		final int diveSeconds = (sampleCount + 1) * sampleInterval;
 		final NodeList samples = suunto.getElementsByTagName("SAMPLE");
 		final DateTime dateTime = new DateTime(start);
 
